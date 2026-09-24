@@ -14,7 +14,10 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: 泄露检查（API Key / 隐私信息）
+      - name: 打包 .potext
+        run: node build.js
+
+      - name: 泄露检查（API Key / 隐私信息，含包内扫描）
         run: node scripts/check-secrets.js
 
       - name: 单元测试
@@ -22,9 +25,6 @@ jobs:
           node test/test.js
           node test/eval-smoke.mjs
           node test/migrate-sim.js
-
-      - name: 打包 .potext
-        run: node build.js
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4

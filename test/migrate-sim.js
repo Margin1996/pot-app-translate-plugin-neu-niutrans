@@ -15,6 +15,16 @@ const os = require('os');
 
 const SRC = path.join(__dirname, '..');
 const POTEXT = path.join(SRC, 'plugin.com.neu.niutrans.potext');
+
+// 本测试需要一个已打包的 .potext。若不存在就自己构建，
+// 这样无论 CI 里打包步骤排在测试之前还是之后都能正常运行。
+if (!fs.existsSync(POTEXT)) {
+    console.log('未找到 .potext，先执行构建...\n');
+    require('child_process').execFileSync(process.execPath, [path.join(SRC, 'build.js')], {
+        stdio: 'inherit',
+    });
+    console.log('');
+}
 const BUILTIN_TRANSLATE = ['niutrans', 'openai', 'bing', 'google', 'lingva']; // 相关子集
 
 let failures = 0;
