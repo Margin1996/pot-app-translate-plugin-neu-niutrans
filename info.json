@@ -3,7 +3,7 @@
   "plugin_type": "translate",
   "icon": "niutrans.svg",
   "display": "小牛翻译 (东北大学)",
-  "homepage": "https://github.com/CHANGE_ME/pot-app-translate-plugin-neu-niutrans",
+  "homepage": "https://github.com/Margin1996/pot-app-translate-plugin-neu-niutrans",
   "needs": [
     {
       "key": "apikey",
