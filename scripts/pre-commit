@@ -1,0 +1,10 @@
+#!/bin/sh
+# Git 提交前钩子：任何一次提交都会先跑泄露检查，发现 API Key 直接拦截。
+# 安装方式：node scripts/install-hooks.js
+
+node scripts/check-secrets.js || {
+    echo ""
+    echo "提交被拦截：检测到疑似 API Key 或隐私信息。"
+    echo "请清理后重新提交，或运行 node scripts/check-secrets.js 查看详情。"
+    exit 1
+}
