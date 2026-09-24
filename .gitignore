@@ -2,15 +2,15 @@
 node_modules/
 
 # 构建产物（由 build.js 生成，不入库）
+# 注意：不要用宽泛的 *secret* / *token* 规则，否则会把 scripts/check-secrets.js
+# 这类「用于检测密钥的工具脚本」也一并排除掉，导致 CI 找不到脚本而失败。
 *.potext
 
 # 本地密钥 / 配置（绝对不要提交）
 .env
 .env.*
 config.json
-*secret*
-*token*
-credentials*
+credentials.json
 
 # 系统与编辑器
 .DS_Store
