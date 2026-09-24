@@ -75,6 +75,14 @@ Pot 内置的全部语言均已映射，对应关系如下：
 
 只需要一个文件：`plugin.com.neu.niutrans.potext`。**插件包里不含 API Key**，可以安全地通过微信/网盘/邮件传递。
 
+下载地址（Release 附件，无需登录）：
+
+```
+https://github.com/Margin1996/pot-app-translate-plugin-neu-niutrans/releases/latest/download/plugin.com.neu.niutrans.potext
+```
+
+> 不要从 Actions 的 artifact 下载：那条路径必须登录 GitHub，且拿到的是 zip，还需解压。
+
 > API Key 保存在 Pot 的 `config.json` 里，不在插件包内，所以换电脑后需重新填一次 Key。不要试图把 `config.json` 一起拷过去——里面有你的 Key 和全部翻译历史。
 
 ### 方法一：图形界面安装（推荐）
@@ -156,8 +164,36 @@ node test/e2e-real-config.js
 打包：
 
 ```bash
-# 将 info.json、main.js、图标文件压缩为 zip，再重命名为 <插件id>.potext
-zip plugin.com.neu.niutrans.potext info.json main.js niutrans.svg
+node build.js
+# 产物 plugin.com.neu.niutrans.potext 位于项目根目录
+```
+
+### 发布新版本
+
+推送 tag 会自动触发 GitHub Actions 打包并创建 Release（含 `.potext` 附件）：
+
+```bash
+git tag -a v1.0.0 -m "v1.0.0"
+git push origin v1.0.0
+```
+
+### 国内网络下推送失败的处理
+
+`github.com` 的 443 端口在国内常被间歇性阻断，表现为
+`Failed to connect to github.com port 443`，但 `api.github.com` 仍可访问。
+
+如果本机有代理（例如 Clash 默认的 `127.0.0.1:7890`），给 git 配置代理即可：
+
+```bash
+git config --global http.proxy  http://127.0.0.1:7890
+git config --global https.proxy http://127.0.0.1:7890
+```
+
+不需要代理时移除：
+
+```bash
+git config --global --unset http.proxy
+git config --global --unset https.proxy
 ```
 
 ### 实现说明
