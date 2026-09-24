@@ -62,18 +62,9 @@ function installPlugin(configDir, potextPath) {
     return dest;
 }
 
-/** 极简 zip 读取（用 PowerShell 解压到临时目录后再读，避免引入依赖） */
+/** 读取 .potext 内的文件（纯 Node 实现，不依赖 powershell，可在 CI 的 Linux 上运行） */
 function readZipEntry(zipPath, entryName) {
-    const { execFileSync } = require('child_process');
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'potext-'));
-    execFileSync('powershell', [
-        '-NoProfile',
-        '-Command',
-        `Expand-Archive -LiteralPath '${zipPath}' -DestinationPath '${tmp}' -Force`,
-    ]);
-    const data = fs.readFileSync(path.join(tmp, entryName));
-    fs.rmSync(tmp, { recursive: true, force: true });
-    return data;
+    return require('../scripts/zip-reader').readZipEntry(zipPath, entryName);
 }
 
 console.log('=== 场景：全新电脑，按「先装插件、再放配置」的顺序迁移 ===\n');

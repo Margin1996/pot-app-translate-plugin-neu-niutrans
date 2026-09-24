@@ -16,7 +16,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const SKIP_DIRS = new Set(['.git', 'node_modules']);
@@ -95,28 +94,23 @@ for (const file of files) {
     }
 }
 
-// 额外检查：.potext 包是否为最新且不含敏感信息
+// 额外检查：.potext 包（若存在）内是否含敏感信息
 const info = JSON.parse(fs.readFileSync(path.join(ROOT, 'info.json'), 'utf8'));
 const potext = path.join(ROOT, `${info.id}.potext`);
 if (fs.existsSync(potext)) {
-    const tmp = fs.mkdtempSync(path.join(require('os').tmpdir(), 'secretscan-'));
-    try {
-        execFileSync('powershell', [
-            '-NoProfile', '-Command',
-            `Expand-Archive -LiteralPath '${potext}' -DestinationPath '${tmp}' -Force`,
-        ], { stdio: 'ignore' });
-        const inner = walk(tmp);
-        const joined = inner.map((f) => fs.readFileSync(f, 'utf8')).join('\n');
-        for (const { name, re } of SECRET_PATTERNS) {
-            re.lastIndex = 0;
-            const matches = joined.match(re) || [];
-            for (const m of matches) {
-                if (isProbablySafe(m)) continue;
-                failures.push({ file: path.basename(potext), kind: '密钥(包内)', name, match: m.slice(0, 60) });
-            }
+    const { listZipEntries, readZipEntry } = require('./zip-reader');
+    const names = listZipEntries(potext);
+    const joined = names
+        .filter((n) => !n.endsWith('/'))
+        .map((n) => readZipEntry(potext, n).toString('utf8'))
+        .join('\n');
+    for (const { name, re } of SECRET_PATTERNS) {
+        re.lastIndex = 0;
+        const matches = joined.match(re) || [];
+        for (const m of matches) {
+            if (isProbablySafe(m)) continue;
+            failures.push({ file: path.basename(potext), kind: '密钥(包内)', name, match: m.slice(0, 60) });
         }
-    } finally {
-        fs.rmSync(tmp, { recursive: true, force: true });
     }
 }
 
