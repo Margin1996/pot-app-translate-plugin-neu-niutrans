@@ -20,13 +20,21 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const SKIP_DIRS = new Set(['.git', 'node_modules']);
 
-/** 敏感模式：命中即失败 */
+/**
+ * 敏感模式：命中即失败。
+ *
+ * 实现注意：正则一律用字符串拼接构造，避免本文件自身的「规则文本」被自己的规则命中。
+ * 例如直接写 /(f4c6|9892)[A-Za-z0-9]{20,}/ 会让本文件的这一行被自己判定为密钥泄露。
+ * 前缀本身不是秘密（只用于缩小排查范围），因此拆成 'f4' + 'c6' 之类不影响检出能力。
+ */
+const KEY_PREFIXES = ['f4' + 'c6', '98' + '92'];
+
 const SECRET_PATTERNS = [
-    { name: '小牛 Key 常见前缀 f4c6/9892', re: /\b(f4c6|9892)[A-Za-z0-9]{20,}\b/g },
-    { name: 'OpenAI 风格 Key', re: /\bsk-[A-Za-z0-9_-]{20,}\b/g },
-    { name: '长十六进制串(疑似 Key)', re: /\b[A-Fa-f0-9]{32,}\b/g },
-    { name: 'JSON apikey 赋值', re: /"apikey"\s*:\s*"[A-Za-z0-9]{16,}"/gi },
-    { name: 'ini/env 风格 apikey 赋值', re: /^\s*apikey\s*[=:]\s*["']?[A-Za-z0-9]{16,}/gim },
+    { name: '小牛 Key（已知前缀 + 长随机串）', re: new RegExp('\\b(' + KEY_PREFIXES.join('|') + ')[A-Za-z0-9]{20,}\\b', 'g') },
+    { name: 'OpenAI 风格 Key', re: new RegExp('\\bsk-[A-Za-z0-9_-]{20,}\\b', 'g') },
+    { name: '长十六进制串(疑似 Key)', re: new RegExp('\\b[A-Fa-f0-9]{32,}\\b', 'g') },
+    { name: 'JSON apikey 赋值', re: new RegExp('"apikey"\\s*:\\s*"[A-Za-z0-9]{16,}"', 'gi') },
+    { name: 'ini/env 风格 apikey 赋值', re: new RegExp('^\\s*apikey\\s*[=:]\\s*["\']?[A-Za-z0-9]{16,}', 'gim') },
 ];
 
 /** 明确无害的字面量（测试用的假 Key） */
